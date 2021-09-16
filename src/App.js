@@ -1,23 +1,47 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useMemo, useState } from 'react'
+import PostFilter from './components/PostFilter'
+import PostForm from './components/PostForm'
+import PostList from './components/PostList'
+import './styles/app.css'
 
 function App() {
+
+  const [posts, setPosts] = useState([
+    {id:1, title: 'Javascript', body: 'Description'},
+    {id:2, title: 'Javascript 2', body: 'Description'},
+    {id:3, title: 'Javascript 3', body: 'Description'}
+  ])  
+
+  const [filter, setFilter] = useState({sort:'', query:''})
+
+  const sortedPosts = useMemo(()=>{
+    console.log('sorting..')
+    if(filter.sort){
+      return [...posts].sort((a,b)=> a[filter.sort].localeCompare(b[filter.sort]) )
+    }
+    return posts
+  }, [filter.sort,posts])
+
+  const sortedAndSearchedPosts = useMemo(()=>{
+    return sortedPosts.filter(post => post.title.toLowerCase().includes(filter.query.toLocaleLowerCase()))
+  }, [filter.query, sortedPosts])
+
+  const createPost = (newPost) =>{
+    setPosts([...posts, newPost])
+  }
+
+  const removePost = (post)=>{
+    setPosts(posts.filter(p => p.id!==post.id))
+  } 
+
+  
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <PostForm create={createPost}/>
+      <hr style={{margin:'15px 0'}}/>
+      <PostFilter filter={filter} setFilter={setFilter}/>
+      <PostList remove={removePost} posts = {sortedAndSearchedPosts} title='List of post 1'/>
+      
     </div>
   );
 }
